@@ -21,8 +21,7 @@ Corruptópolis es un juego de estrategia por turnos que sumerge al jugador en el
 - Modo campaña estructurado
 
 ## 🚀 Tecnologías
-- [TU_LENGUAJE_AQUÍ]
-- [FRAMEWORK_GUI]
+- Java
 - Algoritmos: Dijkstra, BFS, DFS
 
 ## 📚 Propósito Académico
