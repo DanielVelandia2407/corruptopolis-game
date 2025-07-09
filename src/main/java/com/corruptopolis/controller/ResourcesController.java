@@ -1,7 +1,7 @@
 package com.corruptopolis.controller;
 
-import src.main.java.com.corruptopolis.model.Node;
-import src.main.java.com.corruptopolis.model.PlayerResources;
+import com.corruptopolis.model.Node;
+import com.corruptopolis.model.PlayerResources;
 
 public class ResourcesController {
 

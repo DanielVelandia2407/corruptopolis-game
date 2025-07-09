@@ -25,7 +25,6 @@ public class MainApp {
             // Aquí llamar a controller.bribe(...) con un nodo de prueba
             // Por ahora, usaremos un nodo simulado:
             // node debería venir luego de tu árbol; por ahora null a modo de ejemplo
-            //dummynode es un nombre temporal, reemplazar por un nodo real
             boolean success = controller.bribe(dummyNode, player);
             if (!success) {
                 JOptionPane.showMessageDialog(panel,
