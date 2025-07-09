@@ -1,0 +1,54 @@
+@startuml CorruptionTreeStructure
+!theme plain
+title Estructura del Árbol de Corrupción - Corruptópolis
+
+class CorruptionTree {
+  -PoliticalNode root
+  -Map<String, PoliticalNode> nodeRegistry
+  -int totalNodes
+  -int activeNodes
+  --
+  +addNode(parentId, newNode): boolean
+  +activateNode(nodeId): boolean
+  +calculateTotalInfluence(): int
+  +calculateTotalWealth(): int
+  +getActiveNodes(): List<PoliticalNode>
+  +breadthFirstTraversal(): List<PoliticalNode>
+}
+
+class PoliticalNode {
+  -String id, name
+  -NodeType nodeType
+  -NodeState currentState
+  -int loyaltyLevel, ambitionLevel
+  -List<PoliticalNode> subordinates
+  --
+  +calculateBribeCost(): int
+  +calculateBetrayalProbability(): double
+  +addSubordinate(node): void
+}
+
+enum NodeType {
+  MAYOR
+  GOVERNOR
+  CONGRESSMAN
+  JUDGE
+  CONTRACTOR
+}
+
+enum NodeState {
+  ACTIVE
+  UNDER_SUSPICION
+  INVESTIGATED
+  BURNED
+}
+
+CorruptionTree "1" *-- "many" PoliticalNode : contains
+PoliticalNode "1" -- "many" PoliticalNode : subordinates
+PoliticalNode --> NodeType
+PoliticalNode --> NodeState
+
+note right of CorruptionTree : Árbol n-ario que gestiona\nla jerarquía de corrupción
+note bottom of PoliticalNode : Nodos con atributos dinámicos\ny cálculos de probabilidad
+
+@enduml
