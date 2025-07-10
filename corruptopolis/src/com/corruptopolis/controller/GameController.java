@@ -2,8 +2,11 @@ package com.corruptopolis.controller;
 
 import com.corruptopolis.model.Game;
 import com.corruptopolis.model.Game.BribeResult;
+import com.corruptopolis.model.GameLevel;
 import com.corruptopolis.view.MainFrame;
+import com.corruptopolis.view.LevelSelectionFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
 
 /**
  * Controlador principal que gestiona la comunicación entre modelo y vista
@@ -12,6 +15,8 @@ import javax.swing.SwingUtilities;
 public class GameController implements Game.GameObserver {
     private Game gameModel;
     private MainFrame gameView;
+    private LevelSelectionFrame levelSelectionFrame;
+    private String playerName;
 
     /**
      * Constructor que inicializa el controlador
@@ -19,11 +24,21 @@ public class GameController implements Game.GameObserver {
     public GameController() {
         // Se inicializa cuando se crea un nuevo juego
     }
+    
+    /**
+     * Establece el nombre del jugador
+     */
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
+    }
 
     /**
      * Inicia un nuevo juego
      */
-    public void startNewGame(String playerName) {
+    public void startNewGame() {
+        if (playerName == null) {
+            playerName = "Jugador";
+        }
         gameModel = new Game(playerName);
         gameModel.addObserver(this);
 
@@ -34,6 +49,50 @@ public class GameController implements Game.GameObserver {
             gameView = new MainFrame(this);
             gameView.setVisible(true);
             updateView();
+        });
+    }
+    
+    /**
+     * Inicia un nuevo juego con nivel específico
+     */
+    public void startNewGameWithLevel(String playerName, GameLevel level) {
+        this.playerName = playerName;
+        gameModel = new Game(playerName);
+        gameModel.addObserver(this);
+
+        SwingUtilities.invokeLater(() -> {
+            if (gameView != null) {
+                gameView.dispose();
+            }
+            if (levelSelectionFrame != null) {
+                levelSelectionFrame.dispose();
+            }
+            gameView = new MainFrame(this);
+            gameView.setVisible(true);
+            updateView();
+        });
+    }
+    
+    /**
+     * Inicia un nuevo juego con nivel específico usando nombre almacenado
+     */
+    public void startNewGameWithLevel(GameLevel level) {
+        if (playerName == null) {
+            playerName = "Jugador";
+        }
+        startNewGameWithLevel(playerName, level);
+    }
+    
+    /**
+     * Muestra selector de niveles
+     */
+    public void showLevelSelection() {
+        SwingUtilities.invokeLater(() -> {
+            if (gameView != null) {
+                gameView.dispose();
+            }
+            levelSelectionFrame = new LevelSelectionFrame(this);
+            levelSelectionFrame.setVisible(true);
         });
     }
 
@@ -188,8 +247,7 @@ public class GameController implements Game.GameObserver {
      */
     public void restartGame() {
         if (gameModel != null) {
-            String playerName = gameModel.getPlayer().getName();
-            startNewGame(playerName);
+            startNewGame();
         }
     }
 
@@ -225,6 +283,9 @@ public class GameController implements Game.GameObserver {
                     break;
                 case "game_over":
                     gameView.showGameOver(gameModel.getPlayer().calculateScore());
+                    break;
+                case "level_completed":
+                    handleLevelCompleted();
                     break;
                 case "turn_advanced":
                     gameView.updateTurnCounter();
@@ -268,5 +329,22 @@ public class GameController implements Game.GameObserver {
                 gameModel.getPlayer().toString(),
                 gameModel.getCorruptionTree().getTreeStats()
         );
+    }
+    
+    /**
+     * Maneja la finalización de un nivel
+     */
+    private void handleLevelCompleted() {
+        SwingUtilities.invokeLater(() -> {
+            String message = "¡NIVEL COMPLETADO!\n\n¿Continuar al siguiente nivel?";
+            int option = JOptionPane.showConfirmDialog(
+                gameView, message, "Nivel Completado",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE
+            );
+            
+            if (option == JOptionPane.YES_OPTION) {
+                showLevelSelection();
+            }
+        });
     }
 }
