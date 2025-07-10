@@ -3,6 +3,7 @@ package com.corruptopolis.view;
 import com.corruptopolis.controller.GameController;
 import com.corruptopolis.model.Game;
 import com.corruptopolis.view.panels.*;
+import com.corruptopolis.view.panels.NetworkGraphPanel;
 import com.corruptopolis.view.dialogs.*;
 
 import javax.swing.*;
@@ -131,11 +132,17 @@ public class MainFrame extends JFrame {
         topPanel.add(resourcePanel, BorderLayout.WEST);
         topPanel.add(statusPanel, BorderLayout.EAST);
 
-        // Panel central - Árbol de corrupción y panel de juego
-        gamePanel = new GamePanel(controller);
+        // Panel central - Pestañas con árbol, grafo y panel de juego
+        JTabbedPane centerTabs = new JTabbedPane();
+        
         treePanel = new TreePanel(controller);
-
-        JSplitPane centerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel, gamePanel);
+        gamePanel = new GamePanel(controller);
+        NetworkGraphPanel networkPanel = new NetworkGraphPanel(controller);
+        
+        centerTabs.addTab("Jerarquía", treePanel);
+        centerTabs.addTab("Red de Contactos", networkPanel);
+        
+        JSplitPane centerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, centerTabs, gamePanel);
         centerSplitPane.setDividerLocation(600);
         centerSplitPane.setResizeWeight(0.6);
 
@@ -221,6 +228,12 @@ public class MainFrame extends JFrame {
         treePanel.updateTree(gameModel.getCorruptionTree());
         gamePanel.updateGameArea(gameModel);
         actionPanel.updateActions(gameModel);
+        
+        // Actualizar panel de red
+        Component selectedTab = ((JTabbedPane)((JSplitPane)getContentPane().getComponent(1)).getLeftComponent()).getSelectedComponent();
+        if (selectedTab instanceof NetworkGraphPanel) {
+            ((NetworkGraphPanel) selectedTab).updateGraph(gameModel);
+        }
 
         // Actualizar barra de sospecha
         int suspicionLevel = gameModel.getPlayer().getGeneralSuspicionLevel();

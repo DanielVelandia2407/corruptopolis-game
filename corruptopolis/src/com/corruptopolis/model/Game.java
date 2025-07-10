@@ -2,6 +2,7 @@ package com.corruptopolis.model;
 
 import com.corruptopolis.model.entities.*;
 import com.corruptopolis.model.structures.*;
+import com.corruptopolis.model.structures.DualWeightGraph;
 import com.corruptopolis.model.events.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,6 +17,7 @@ public class Game {
     private Player player;
     private CorruptionTree corruptionTree;
     private ConnectionGraph connectionGraph;
+    private DualWeightGraph dualWeightGraph;
     private EventQueue eventQueue;
     private EventManager eventManager;
 
@@ -31,6 +33,7 @@ public class Game {
         this.player = new Player(playerName);
         this.corruptionTree = new CorruptionTree(playerName);
         this.connectionGraph = new ConnectionGraph();
+        this.dualWeightGraph = new DualWeightGraph();
         this.eventQueue = new EventQueue();
         this.eventManager = new EventManager();
 
@@ -66,6 +69,7 @@ public class Game {
                     20000 + new Random().nextInt(15000)
             );
             connectionGraph.addAvailableContact(mayor);
+            dualWeightGraph.addNode(mayor);
         }
 
         for (String name : contractorNames) {
@@ -76,6 +80,7 @@ public class Game {
                     15000 + new Random().nextInt(10000)
             );
             connectionGraph.addAvailableContact(contractor);
+            dualWeightGraph.addNode(contractor);
         }
     }
 
@@ -85,6 +90,9 @@ public class Game {
     private void scheduleInitialEvents() {
         eventQueue.addEvent(new GameEvent(EventType.ELECTION_OPPORTUNITY, 3, "Elecciones regionales"));
         eventQueue.addEvent(new GameEvent(EventType.MEDIA_ATTENTION, 5, "Investigación periodística"));
+        
+        // Generar conexiones del grafo
+        dualWeightGraph.generateConnections();
     }
 
     /**
@@ -165,7 +173,12 @@ public class Game {
             );
 
             connectionGraph.addAvailableContact(newContact);
+            dualWeightGraph.addNode(newContact);
         }
+        
+        // Regenerar conexiones del grafo
+        dualWeightGraph.generateConnections();
+        
     }
 
     /**
@@ -369,6 +382,7 @@ public class Game {
     public Player getPlayer() { return player; }
     public CorruptionTree getCorruptionTree() { return corruptionTree; }
     public ConnectionGraph getConnectionGraph() { return connectionGraph; }
+    public DualWeightGraph getDualWeightGraph() { return dualWeightGraph; }
     public int getCurrentTurn() { return currentTurn; }
     public boolean isGameActive() { return gameActive; }
     public String getGameStatus() { return gameStatus; }
