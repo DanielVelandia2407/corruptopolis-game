@@ -65,7 +65,8 @@ public class Main {
         if (playerName != null && !playerName.trim().isEmpty()) {
             // Crear y iniciar el controlador del juego
             GameController controller = new GameController();
-            controller.startNewGame(playerName.trim());
+            controller.setPlayerName(playerName.trim());
+            controller.showLevelSelection();
         } else {
             System.exit(0);
         }

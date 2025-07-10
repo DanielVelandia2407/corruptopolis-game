@@ -6,6 +6,7 @@ import com.corruptopolis.model.structures.DualWeightGraph;
 import com.corruptopolis.model.events.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.Timer;
 
 /**
  * Modelo principal del juego que contiene toda la lógica de negocio
@@ -25,6 +26,13 @@ public class Game {
     private boolean gameActive;
     private String gameStatus;
     private List<GameObserver> observers;
+    
+    // Sistema de restricción de acciones
+    private int actionsThisTurn;
+    private static final int MAX_ACTIONS_PER_TURN = 4;
+    private Timer turnTimer;
+    private static final int TURN_DURATION_MS = 10000; // 10 segundos
+    private long turnStartTime;
 
     /**
      * Constructor que inicializa el juego
@@ -41,8 +49,10 @@ public class Game {
         this.gameActive = true;
         this.gameStatus = "Iniciando imperio de corrupción...";
         this.observers = new ArrayList<>();
+        this.actionsThisTurn = 0;
 
         initializeGame();
+        startTurnTimer();
     }
 
     /**
@@ -102,6 +112,10 @@ public class Game {
         if (!gameActive) {
             return new BribeResult(false, "El juego ha terminado");
         }
+        
+        if (actionsThisTurn >= MAX_ACTIONS_PER_TURN) {
+            return new BribeResult(false, "Máximo de acciones por turno alcanzado");
+        }
 
         PoliticalNode contact = connectionGraph.getAvailableContact(contactId);
         if (contact == null) {
@@ -121,12 +135,14 @@ public class Game {
 
             generateNewContacts(contact);
             player.recordSuccessfulOperation();
+            actionsThisTurn++;
 
             notifyObservers("bribe_success");
             return new BribeResult(true, contact.getName() + " se ha unido a tu red");
         } else {
             player.recordFailedOperation();
             player.increaseSuspicion(10);
+            actionsThisTurn++;
 
             notifyObservers("bribe_failed");
             return new BribeResult(false, "El soborno falló. Nivel de sospecha aumentado");
@@ -186,12 +202,14 @@ public class Game {
      */
     public void extractResources() {
         if (!gameActive) return;
+        if (actionsThisTurn >= MAX_ACTIONS_PER_TURN) return;
 
         int totalInfluence = corruptionTree.calculateTotalInfluence();
         int totalWealth = corruptionTree.calculateTotalWealth();
 
         player.addInfluence(totalInfluence);
         player.addDirtyMoney(totalWealth);
+        actionsThisTurn++;
 
         double networkRisk = corruptionTree.calculateNetworkRisk();
         if (networkRisk > 70) {
@@ -206,10 +224,12 @@ public class Game {
      */
     public boolean performCoverUp(int investment) {
         if (!gameActive) return false;
+        if (actionsThisTurn >= MAX_ACTIONS_PER_TURN) return false;
 
         boolean success = player.performCoverUp(investment);
         if (success) {
             player.recordSuccessfulOperation();
+            actionsThisTurn++;
             notifyObservers("coverup_success");
         }
         return success;
@@ -223,12 +243,33 @@ public class Game {
 
         currentTurn++;
         player.nextTurn();
+        actionsThisTurn = 0; // Resetear contador de acciones
 
-        extractResources();
         processEvents();
         checkGameConditions();
+        
+        // Reiniciar timer del turno
+        startTurnTimer();
 
         notifyObservers("turn_advanced");
+    }
+    
+    /**
+     * Inicia el timer del turno
+     */
+    private void startTurnTimer() {
+        if (turnTimer != null) {
+            turnTimer.stop();
+        }
+        
+        turnStartTime = System.currentTimeMillis();
+        turnTimer = new Timer(TURN_DURATION_MS, e -> {
+            if (gameActive) {
+                nextTurn();
+            }
+        });
+        turnTimer.setRepeats(false);
+        turnTimer.start();
     }
 
     /**
@@ -386,6 +427,16 @@ public class Game {
     public int getCurrentTurn() { return currentTurn; }
     public boolean isGameActive() { return gameActive; }
     public String getGameStatus() { return gameStatus; }
+    public int getActionsThisTurn() { return actionsThisTurn; }
+    public int getMaxActionsPerTurn() { return MAX_ACTIONS_PER_TURN; }
+    public int getRemainingTurnTime() {
+        if (turnTimer != null && turnTimer.isRunning()) {
+            long elapsed = System.currentTimeMillis() - turnStartTime;
+            int remaining = (int)((TURN_DURATION_MS - elapsed) / 1000);
+            return Math.max(0, remaining);
+        }
+        return 0;
+    }
 
     /**
      * Interface para el patrón Observer

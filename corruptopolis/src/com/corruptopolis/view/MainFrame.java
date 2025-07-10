@@ -75,6 +75,8 @@ public class MainFrame extends JFrame {
         // Menú Juego
         JMenu gameMenu = new JMenu("Juego");
         gameMenu.add(createMenuItem("Nuevo Juego", "NEW_GAME"));
+        gameMenu.add(createMenuItem("Selector de Niveles", "LEVEL_SELECTION"));
+        gameMenu.addSeparator();
         gameMenu.add(createMenuItem("Guardar", "SAVE_GAME"));
         gameMenu.add(createMenuItem("Cargar", "LOAD_GAME"));
         gameMenu.addSeparator();
@@ -296,14 +298,7 @@ public class MainFrame extends JFrame {
      * Muestra el diálogo de nuevo juego
      */
     private void showNewGameDialog() {
-        String playerName = JOptionPane.showInputDialog(
-                this, "Ingresa el nombre del nuevo líder corrupto:",
-                "Nuevo Juego", JOptionPane.QUESTION_MESSAGE
-        );
-
-        if (playerName != null && !playerName.trim().isEmpty()) {
-            controller.startNewGame(playerName.trim());
-        }
+        controller.startNewGame();
     }
 
     /**
@@ -410,6 +405,9 @@ public class MainFrame extends JFrame {
             switch (command) {
                 case "NEW_GAME":
                     showNewGameDialog();
+                    break;
+                case "LEVEL_SELECTION":
+                    controller.showLevelSelection();
                     break;
                 case "SAVE_GAME":
                     controller.saveGame();

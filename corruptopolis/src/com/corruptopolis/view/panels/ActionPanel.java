@@ -53,10 +53,23 @@ public class ActionPanel extends JPanel {
 
     public void updateActions(Game game) {
         boolean gameActive = game != null && game.isGameActive();
+        boolean canPerformActions = gameActive && (game.getActionsThisTurn() < game.getMaxActionsPerTurn());
+        
         nextTurnButton.setEnabled(gameActive);
-        extractResourcesButton.setEnabled(gameActive);
-        coverUpButton.setEnabled(gameActive);
-        launderButton.setEnabled(gameActive);
+        extractResourcesButton.setEnabled(canPerformActions);
+        coverUpButton.setEnabled(canPerformActions);
+        launderButton.setEnabled(canPerformActions);
+        
+        // Cambiar texto del botón si no se pueden realizar más acciones
+        if (!canPerformActions && gameActive) {
+            extractResourcesButton.setText("Sin Acciones");
+            coverUpButton.setText("Sin Acciones");
+            launderButton.setText("Sin Acciones");
+        } else {
+            extractResourcesButton.setText("Extraer Recursos");
+            coverUpButton.setText("Encubrimiento");
+            launderButton.setText("Lavar Dinero");
+        }
     }
 
     private void showCoverUpDialog() {
